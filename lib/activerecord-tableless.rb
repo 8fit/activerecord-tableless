@@ -86,7 +86,24 @@ module ActiveRecord
 
       # Register a new column.
       def column(name, sql_type = nil, default = nil, null = true)
-        tableless_options[:columns] << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, sql_type.to_s, null)
+        if ActiveRecord::VERSION::STRING >= "4.2.0"
+          if sql_type.to_s == 'array'
+            cast_type = ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Array.new(ActiveRecord::Type::Value.new({}))
+          elsif sql_type.to_s == 'json'
+            cast_type = ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Json.new()
+          elsif sql_type.to_s == 'jsonb'
+            cast_type = ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Jsonb.new()
+          elsif sql_type.to_s == 'datetime'
+            cast_type = ActiveRecord::ConnectionAdapters::PostgreSQL::OID::DateTime.new({})
+          else
+            cast_type = "ActiveRecord::Type::#{sql_type.to_s.camelize}".constantize.new
+          end
+          tableless_options[:columns] << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, cast_type, sql_type.to_s, null)
+          # cast_type = ActiveRecord::Base.connection.send :lookup_cast_type, sql_type
+          # tableless_options[:columns] << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, cast_type, sql_type.to_s, null)
+        else
+          tableless_options[:columns] << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, sql_type.to_s, null)
+        end
       end
 
       # Register a set of colums with the same SQL type

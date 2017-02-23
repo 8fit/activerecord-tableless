@@ -1,11 +1,17 @@
-require 'sqlite3'
+# require 'sqlite3'
 require 'active_record'
 require 'activerecord-tableless'
 require 'logger'
 require 'spec_helper'
+require 'pry'
+require 'pg'
 
 def make_tableless_model(database = nil, nested = nil)
   eval <<EOCLASS
+  ActiveRecord::Base.establish_connection(:adapter  => 'postgresql', :database => 'test')
+  ActiveRecord::Base.connection.execute("drop table if exists chairs")
+  ActiveRecord::Base.connection.execute("create table chairs (id INTEGER PRIMARY KEY, name TEXT )")
+
   class Chair < ActiveRecord::Base
     #{database ? "has_no_table :database => :#{database}" : 'has_no_table'}
     column :id, :integer
@@ -26,6 +32,7 @@ EOCLASS
       column :id, :integer
       column :chair_id, :integer
       column :name, :string
+      column :json_array, :string
     end
 EOCLASS
   end
@@ -34,6 +41,7 @@ end
 def remove_models
   Object.send(:remove_const, :Chair) rescue nil
   Object.send(:remove_const, :ArmRest) rescue nil
+  ActiveRecord::Base.clear_all_connections!
 end
 
 ActiveRecord::Base.logger = Logger.new(STDERR)

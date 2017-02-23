@@ -18,7 +18,8 @@ Gem::Specification.new do |gem|
 
   gem.require_paths = ["lib"]
 
-  gem.add_runtime_dependency("activerecord", ">= 2.3.0")
+  gem.add_runtime_dependency("activerecord", "= 4.2.6")
+  gem.add_runtime_dependency("pg")
 
   gem.add_development_dependency('bundler', '> 0')
   gem.add_development_dependency('rake', '> 0')
@@ -35,6 +36,7 @@ Gem::Specification.new do |gem|
   ##Specifying upper limit version for ruby 1.8.7
   gem.add_development_dependency('nokogiri', '< 1.6')
   gem.add_development_dependency('capybara', '< 2.1')
+  gem.add_development_dependency('pry')
 
 #  gem.add_development_dependency('launchy', '~> 2.1')
 #  gem.add_development_dependency('debugger')
